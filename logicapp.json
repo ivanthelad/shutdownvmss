@@ -1,0 +1,112 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "actions": {
+            "Shutdown_scalesets+vms+aci": {
+                "inputs": {
+                    "body": {
+                        "identity": {
+                            "type": "UserAssigned",
+                            "userAssignedIdentities": "@parameters('USERMANAGEDIDENTITY')"
+                        },
+                        "location": "westeurope",
+                        "properties": {
+                            "containers": [
+                                {
+                                    "name": "myshutdownvms",
+                                    "properties": {
+                                        "environmentVariables": [
+                                            {
+                                                "name": "SUBSCRIPTION_ID",
+                                                "value": "@parameters('SUBSCRIPTION_ID')"
+                                            }
+                                        ],
+                                        "image": "ivmckinl/shutdownvmss:latest",
+                                        "resources": {
+                                            "limits": {
+                                                "cpu": 0.5,
+                                                "memoryInGB": 0.5
+                                            },
+                                            "requests": {
+                                                "cpu": 0.5,
+                                                "memoryInGB": 0.5
+                                            }
+                                        }
+                                    }
+                                }
+                            ],
+                            "diagnostics": {
+                                "logAnalytics": {
+                                    "workspaceId": "@parameters('WORKSPACE_ID')",
+                                    "workspaceKey": "@parameters('WORKSPACE_KEY')"
+                                }
+                            },
+                            "osType": "Linux",
+                            "restartPolicy": "Never",
+                            "sku": "Standard"
+                        }
+                    },
+                    "host": {
+                 
+                    },
+                    "method": "put",
+                    "path": "/subscriptions/@{encodeURIComponent('xxx')}/resourceGroups/@{encodeURIComponent('xxxx')}/providers/Microsoft.ContainerInstance/containerGroups/@{encodeURIComponent('xxxx')}",
+                    "queries": {
+                        "x-ms-api-version": "2019-12-01"
+                    }
+                },
+                "runAfter": {},
+                "type": "ApiConnection"
+            }
+        },
+        "contentVersion": "1.0.0.0",
+        "outputs": {},
+        "parameters": {
+            "$connections": {
+                "defaultValue": {},
+                "type": "Object"
+            },
+            "SUBSCRIPTION_ID": {
+                "defaultValue": "xxxxx",
+                "type": "String"
+            },
+            "USERMANAGEDIDENTITY": {
+                "defaultValue": {
+                    "/subscriptions/xxxxx/resourcegroups/xxxxxx/providers/microsoft.managedidentity/userassignedidentities/xxxxx": {}
+                },
+                "type": "Object"
+            },
+            "WORKSPACE_ID": {
+                "defaultValue": "xxxxxx",
+                "type": "String"
+            },
+            "WORKSPACE_KEY": {
+                "defaultValue": "xxxxxx",
+                "type": "String"
+            }
+        },
+        "triggers": {
+            "Shutdown_every_evening": {
+                "recurrence": {
+                    "frequency": "Day",
+                    "interval": 1,
+                    "schedule": {
+                        "hours": [
+                            "19"
+                        ]
+                    }
+                },
+                "type": "Recurrence"
+            }
+        }
+    },
+    "parameters": {
+        "value": {
+            "aci": {
+                "connectionId": "/subscriptions/cxxxxxx/resourceGroups/aksonazure/providers/Microsoft.Web/connections/xxx",
+                "connectionName": "aci",
+                "id": "/subscriptions/xxxxx/providers/Microsoft.Web/locations/westeurope/managedApis/xxx"
+            }
+        }
+    }
+}
