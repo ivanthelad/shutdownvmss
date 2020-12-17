@@ -9,45 +9,7 @@ includegrouplist=$INCLUDE_RG
 echo "building filter based on. Excluding takes priority  "
 echo "   excluding [$ignoregrouplist]"
 echo "   including [$includegrouplist]"
-## #ignore list 
-IFS=',' read -ra my_array <<< "$ignoregrouplist"
-for i in "${my_array[@]}"
-do
-		excludepath="${excludepath:+$excludepath }resourceGroup!='$i' && "
-done
 
-IFS=',' read -ra includearray <<< "$includegrouplist"
-for i in "${includearray[@]}"
-do
-	   echo "goo $i"
-		includepath="${includepath:+$includepath }resourceGroup=='$i' || "
-done
-echo ddddd
-
-echo "** exclude filter complete: jmespath= $excludepath"
-echo "** include  filter complete: jmespath= $includepath"
-
-if [[ -z $excludepath && ! -z $includepath ]]; then 
-echo 1: no exclude but with inlcude
-    filter="[? ${includepath::-4}]"
-elif [[ ! -z $excludepath && -z $includepath ]]; then 
-    
-echo 2: no include but with include  
-    filter="[?${excludepath::-4}]"
-
-elif [[ -z $excludepath &&  -z $includepath ]]; then 
-
-echo 3: no filters
-    filter="[]"
-    
-else 
-
-    echo " 4 both include and exclude  filters "
-    filter="[]"
-    filter="[?${excludepath::-4} && ( ${includepath::-4})]"
-fi
-#filter="[?${excludepath::-4} && ( ${includepath::-4})]"
-echo "Final filter to be applied = $filter"
  
 
 function  isempty ()
@@ -65,6 +27,46 @@ function  isempty ()
       return 1
 
 }
+function genFilter()
+{
+        ## #ignore list 
+    IFS=',' read -ra my_array <<< "$ignoregrouplist"
+    for i in "${my_array[@]}"
+    do
+            excludepath="${excludepath:+$excludepath }resourceGroup!='$i' && "
+    done
+
+    IFS=',' read -ra includearray <<< "$includegrouplist"
+    for i in "${includearray[@]}"
+    do
+        echo "goo $i"
+            includepath="${includepath:+$includepath }resourceGroup=='$i' || "
+    done
+    echo "** exclude filter complete: jmespath= $excludepath"
+    echo "** include  filter complete: jmespath= $includepath"
+
+    if [[ -z $excludepath && ! -z $includepath ]]; then 
+        echo 1: no exclude but with inlcude
+        filter="[? ${includepath::-4}]"
+    elif [[ ! -z $excludepath && -z $includepath ]]; then 
+        
+        echo 2: no include but with include  
+        filter="[?${excludepath::-4}]"
+
+    elif [[ -z $excludepath &&  -z $includepath ]]; then 
+
+        echo 3: no filters
+        filter="[]"
+        
+    else 
+
+        echo " 4 both include and exclude  filters "
+        filter="[]"
+        filter="[?${excludepath::-4} && ( ${includepath::-4})]"
+    fi
+    #filter="[?${excludepath::-4} && ( ${includepath::-4})]"
+    echo "Final filter to be applied = $filter"
+}
 if isempty "SUBSCRIPTION_ID" "$SUBSCRIPTION_ID"; then 
             echo -e "      \e[33mWarn\e[0m: SUBSCRIPTION_ID not set."
             exit -1
@@ -76,6 +78,8 @@ fi
 if isempty "EXCLUDE_RG" "$EXCLUDE_RG"; then 
             echo -e "      \e[33mWarn\e[0m: EXCLUDE_RG not set. No Resource Groups will be excludes"
 fi
+
+genFilter
 
 if "$USE_MSI"; then 
     echo login in with msi
