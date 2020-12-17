@@ -4,7 +4,15 @@ Simple image that uses managed identity to shutdown all vmss, vms in your subscr
 docker build -t  shutdownvm:latest
 docker push shutdownvm:latest 
 ## run 
-best way to run this is by creating a logic app with the following configuration.  the image expects to use a managed identity. by default it can use the default image ivmckinl/shutdownvm:latest
+best way to run this is by creating a logic app with the following configuration.  the image expects to use a managed identity. by default it can use the default image ivmckinl/shutdownvm:latest. the image accepts the following env variables 
+```ENV SUBSCRIPTION_ID=""
+## comman seperated list of RGs to inlcude in the shutdown
+ENV INCLUDE_RG=""
+## comma seperated list of RGs to exclude in the shutdown 
+## EXCLUDE_RG="rg1,rg2,rg3"
+ENV EXCLUDE_RG=""```
+
+To Run create a logic app 
 * go to Logic apps and create a empty logic app 
 * Create a Schedule tadk that runs at 19:00 hours every day "Recurrence"
 * create a Task that create a Container Group "Create or update a container group" 
