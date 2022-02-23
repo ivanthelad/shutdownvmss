@@ -119,6 +119,15 @@ az container list --query "$filter.{id:id,resourceGroup:resourceGroup,name:name}
    echo Stopping container  $container_name  in RG $container_rg | tee -a  shutdown.log
    az container stop --name $container_name --resource-group $container_rg   
  done
+ echo --------------------------------------- |tee -a  shutdown.log
+echo stopping gws >> shutdown.log
+az network application-gateway list --query "$filter.{id:id,resourceGroup:resourceGroup,name:name}" -o tsv  | while IFS= read -r line;  do
+    appgw_id=$(echo $line| cut -d " " -f1)
+    appgw_name=$(echo $line| cut -d " " -f3)
+    appgw_rg=$(echo $line| cut -d " " -f2)
+   echo Stopping appgw  $appgw_name  in RG $appgw_rg | tee -a  shutdown.log
+  az network application-gateway stop -n $appgw_name  -g  $appgw_rg
+done
 findate=`date '+%Y-%m-%d %H:%M:%S'`
 echo "--------------------------------------" | tee -a  shutdown.log
 echo " Finished shutdown $mydate @ $findate "  | tee -a  shutdown.log
