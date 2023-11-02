@@ -117,7 +117,7 @@ az container list --query "$filter.{id:id,resourceGroup:resourceGroup,name:name}
     container_name=$(echo $line| cut -d " " -f3)
     container_rg=$(echo $line| cut -d " " -f2)
    echo Stopping container  $container_name  in RG $container_rg | tee -a  shutdown.log
-   az container stop --name $container_name --resource-group $container_rg   
+   az container stop --name $container_name --resource-group $container_rg    --no-wait
  done
  echo --------------------------------------- |tee -a  shutdown.log
 echo stopping gws >> shutdown.log
@@ -126,7 +126,17 @@ az network application-gateway list --query "$filter.{id:id,resourceGroup:resour
     appgw_name=$(echo $line| cut -d " " -f3)
     appgw_rg=$(echo $line| cut -d " " -f2)
    echo Stopping appgw  $appgw_name  in RG $appgw_rg | tee -a  shutdown.log
-  az network application-gateway stop -n $appgw_name  -g  $appgw_rg
+  az network application-gateway stop -n $appgw_name  -g  $appgw_rg --no-wait
+done
+
+echo stopping AKS >> shutdown.log
+az aks   list --query "$filter.{id:id,resourceGroup:resourceGroup,name:name}" -o tsv  | while IFS= read -r line;  do
+echo $line
+    aks_id=$(echo $line| cut -d " " -f1)
+    aks_name=$(echo $line| cut -d " " -f3)
+    aks_rg=$(echo $line| cut -d " " -f2)
+   echo Stopping aks  $aks_name  in RG $aks_rg  $aks_id
+   az aks stop -n $aks_name  -g  $aks_rg --no-wait
 done
 findate=`date '+%Y-%m-%d %H:%M:%S'`
 echo "--------------------------------------" | tee -a  shutdown.log
