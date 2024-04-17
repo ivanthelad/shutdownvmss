@@ -136,7 +136,18 @@ echo $line
     aks_name=$(echo $line| cut -d " " -f3)
     aks_rg=$(echo $line| cut -d " " -f2)
    echo Stopping aks  $aks_name  in RG $aks_rg  $aks_id
-   az aks stop -n $aks_name  -g  $aks_rg --no-wait
+   #az aks stop -n $aks_name  -g  $aks_rg --no-wait
+   # Get the node pools of the AKS cluster
+    node_pools=$(az aks nodepool list --cluster-name $aks_name --resource-group $aks_rg --query "[].name" -o tsv)
+
+    # Iterate over the node pools
+    for node_pool in $node_pools
+    do
+         echo "Stopping Node pool: $node_pool for AKS cluster: $aks_name in Resource Group: $aks_rg"
+
+        az aks nodepool stop --resource-group $aks_rg --cluster-name $aks_name --nodepool-name $node_pool
+    
+    done
 done
 findate=`date '+%Y-%m-%d %H:%M:%S'`
 echo "--------------------------------------" | tee -a  shutdown.log
